@@ -1,0 +1,11 @@
+<resources>
+
+    <string name="app_name">Alarm Hotspot</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_main">Alarm Hotspot</string>
+
+    <string name="appwidget_configure_instructions">This text will be shown before the date in our example widget.</string>
+    
+    
+</resources>
