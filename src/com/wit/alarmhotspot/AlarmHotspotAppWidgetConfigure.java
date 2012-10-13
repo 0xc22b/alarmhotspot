@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.RemoteViews;
 
-
 public class AlarmHotspotAppWidgetConfigure extends Activity {
     public static final String TAG = "AlarmHotspotAppWidgetConfigure";
     public static final String PREFS_NAME =
@@ -54,17 +53,18 @@ public class AlarmHotspotAppWidgetConfigure extends Activity {
             finish();
         }
 
-        mDataLimitEditText.setText(loadDataLimitPref(AlarmHotspotAppWidgetConfigure.this, mAppWidgetId));
+        mDataLimitEditText.setText(loadDataLimitPref(
+                AlarmHotspotAppWidgetConfigure.this.getApplicationContext()));
     }
 
     private View.OnClickListener mOnSaveBtnClickedListener = new View.OnClickListener() {
         public void onClick(View v) {
-            final Context context = AlarmHotspotAppWidgetConfigure.this;
+            final Context context = AlarmHotspotAppWidgetConfigure.this.getApplicationContext();
 
             // When the button is clicked, save the string in our prefs and return that they
             // clicked OK.
             String dataLimit = mDataLimitEditText.getText().toString();
-            saveDataLimitPref(context, mAppWidgetId, dataLimit);
+            saveDataLimitPref(context, dataLimit);
 
             // Push widget update to surface with newly set prefix
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
@@ -78,23 +78,23 @@ public class AlarmHotspotAppWidgetConfigure extends Activity {
             finish();
         }
     };
-
-    // Write the data limit to the SharedPreferences object for this widget
-    private static void saveDataLimitPref(Context context, int appWidgetId, String text) {
-        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.putString(DATA_LIMIT + appWidgetId, text);
-        prefs.commit();
-    }
-
-    // Read the data limit from the SharedPreferences object for this widget.
+    
+    // Read the data limit from the SharedPreferences object.
     // If there is no preference saved, get the default from a resource
-    private static String loadDataLimitPref(Context context, int appWidgetId) {
+    static String loadDataLimitPref(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String dataLimit = prefs.getString(DATA_LIMIT + appWidgetId, null);
+        String dataLimit = prefs.getString(DATA_LIMIT, null);
         if (dataLimit != null) {
             return dataLimit;
         } else {
             return "0";
         }
+    }
+
+    // Write the data limit to the SharedPreferences object.
+    private static void saveDataLimitPref(Context context, String text) {
+        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
+        prefs.putString(DATA_LIMIT, text);
+        prefs.commit();
     }
 }

@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.widget.RemoteViews;
 
 public class AlarmHotspotAppWidgetProvider extends AppWidgetProvider {
@@ -20,12 +19,8 @@ public class AlarmHotspotAppWidgetProvider extends AppWidgetProvider {
         for (int i=0; i<N; i++) {
             int appWidgetId = appWidgetIds[i];
             
-            Bundle bundle = new Bundle();
-            bundle.putBoolean(AlarmHotspotService.IS_FROM_WIDGET, true);
-            
             Intent intent = new Intent(context, AlarmHotspotService.class);
-            intent.putExtras(bundle);
-            
+            intent.putExtras(AlarmHotspotService.generateBundle(true, 0l, 0l, 0l));
             PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, 0);
 
             // Get the layout for the App Widget and attach an on-click listener
