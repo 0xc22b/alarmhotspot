@@ -13,6 +13,9 @@ public class WifiApManager {
         WIFI_AP_STATE_DISABLING, WIFI_AP_STATE_DISABLED, WIFI_AP_STATE_ENABLING, WIFI_AP_STATE_ENABLED, WIFI_AP_STATE_FAILED
     }
     
+    public static final String WIFI_AP_STATE_CHANGED_ACTION = "android.net.wifi.WIFI_AP_STATE_CHANGED";
+    public static final String EXTRA_WIFI_AP_STATE = "wifi_state";
+    
 	private final WifiManager mWifiManager;
  
 	public WifiApManager(Context context) {

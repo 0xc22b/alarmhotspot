@@ -34,7 +34,16 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
+        
+        <activity
+            android:name=".LogActivity"
+            android:label="@string/title_activity_log" >
+        </activity>
 
+        <service
+            android:name=".AlarmHotspotService"
+            android:exported="false" />
+        
         <receiver android:name=".AlarmHotspotAppWidgetProvider" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -47,15 +56,11 @@
         
         <receiver android:name=".AlarmHotspotBroadcastReceiver" >
         </receiver>
-
-        <service
-            android:name=".AlarmHotspotService"
-            android:exported="false" />
-
-        <activity
-            android:name=".LogActivity"
-            android:label="@string/title_activity_log" >
-        </activity>
+        
+        <receiver android:name=".WifiApBroadcastReceiver" >
+            <intent-filter>
+                <action android:name="android.net.wifi.WIFI_AP_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
-
 </manifest>

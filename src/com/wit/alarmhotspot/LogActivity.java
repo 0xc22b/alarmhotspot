@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import android.app.ListActivity;
 import android.os.Bundle;
 import android.view.Menu;
-import android.widget.ArrayAdapter;
 
 import com.wit.alarmhotspot.model.AlarmHotspotDb;
 import com.wit.alarmhotspot.model.TransferObj;
@@ -55,7 +54,6 @@ public class LogActivity extends ListActivity {
         super.onSaveInstanceState(outState);
     }
 
-    @SuppressWarnings("unchecked")
     private void updateDisplayList() {
         assert(transferList != null);
         
@@ -63,8 +61,6 @@ public class LogActivity extends ListActivity {
         for (TransferObj transferObj : transferList) {
             displayList.add(transferObj);
         }
-        ((ArrayAdapter<TransferObj>) getListAdapter()).notifyDataSetChanged();
+        ((TransferListAdapter) getListAdapter()).notifyDataSetChanged();
     }
-    
-    
 }

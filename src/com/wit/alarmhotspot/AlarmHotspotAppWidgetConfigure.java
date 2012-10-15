@@ -8,9 +8,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.RemoteViews;
 
 public class AlarmHotspotAppWidgetConfigure extends Activity {
+    
     public static final String TAG = "AlarmHotspotAppWidgetConfigure";
     public static final String PREFS_NAME =
             "com.wit.alarmhotspot.AlarmHotspotAppWidgetProvider";
@@ -18,10 +18,6 @@ public class AlarmHotspotAppWidgetConfigure extends Activity {
 
     private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private EditText mDataLimitEditText;
-
-    public AlarmHotspotAppWidgetConfigure() {
-        super();
-    }
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -36,9 +32,8 @@ public class AlarmHotspotAppWidgetConfigure extends Activity {
 
         // Find the EditText
         mDataLimitEditText = (EditText)findViewById(R.id.data_limit_edit_text);
-
-        // Bind the action for the save button.
-        findViewById(R.id.save_btn).setOnClickListener(mOnSaveBtnClickedListener);
+        mDataLimitEditText.setText(loadDataLimitPref(
+                AlarmHotspotAppWidgetConfigure.this.getApplicationContext()));
 
         // Find the widget id from the intent. 
         Intent intent = getIntent();
@@ -47,37 +42,30 @@ public class AlarmHotspotAppWidgetConfigure extends Activity {
             mAppWidgetId = extras.getInt(
                     AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
-
-        // If they gave us an intent without the widget id, just bail.
-        if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
-            finish();
-        }
-
-        mDataLimitEditText.setText(loadDataLimitPref(
-                AlarmHotspotAppWidgetConfigure.this.getApplicationContext()));
     }
+    
+    public void onSaveBtnClicked(View v) {
+        final Context context = AlarmHotspotAppWidgetConfigure.this.getApplicationContext();
 
-    private View.OnClickListener mOnSaveBtnClickedListener = new View.OnClickListener() {
-        public void onClick(View v) {
-            final Context context = AlarmHotspotAppWidgetConfigure.this.getApplicationContext();
+        // When the button is clicked, save the string in our prefs and return that they
+        // clicked OK.
+        String dataLimit = mDataLimitEditText.getText().toString();
+        saveDataLimitPref(context, dataLimit);
 
-            // When the button is clicked, save the string in our prefs and return that they
-            // clicked OK.
-            String dataLimit = mDataLimitEditText.getText().toString();
-            saveDataLimitPref(context, dataLimit);
-
-            // Push widget update to surface with newly set prefix
+        // Push widget update to surface if the configure changes the widget's display.
+        // onUpdate was already called before configure.
+        /*if (mAppWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.appwidget_provider);
             appWidgetManager.updateAppWidget(mAppWidgetId, views);
+        }*/
 
-            // Make sure we pass back the original appWidgetId
-            Intent resultValue = new Intent();
-            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
-            setResult(RESULT_OK, resultValue);
-            finish();
-        }
-    };
+        // Make sure we pass back the original appWidgetId
+        Intent resultValue = new Intent();
+        resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+        setResult(RESULT_OK, resultValue);
+        finish();
+    }
     
     // Read the data limit from the SharedPreferences object.
     // If there is no preference saved, get the default from a resource
@@ -87,7 +75,7 @@ public class AlarmHotspotAppWidgetConfigure extends Activity {
         if (dataLimit != null) {
             return dataLimit;
         } else {
-            return "0";
+            return "20";
         }
     }
 

@@ -82,7 +82,7 @@ public class AlarmHotspotDb {
                         COLUMN_NAME_END_DATE, COLUMN_NAME_TRANSFER };
         Cursor cursor =
                 db.query(TABLE_NAME, columns, null, null,
-                        null, null, COLUMN_NAME_START_DATE);
+                        null, null, COLUMN_NAME_START_DATE + " desc");
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             TransferObj transferObj = new TransferObj(cursor);

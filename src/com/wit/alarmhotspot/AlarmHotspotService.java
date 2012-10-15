@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.TrafficStats;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.PowerManager.WakeLock;
 import android.widget.Toast;
 
@@ -51,6 +52,8 @@ public class AlarmHotspotService extends IntentService {
 
     static WakeLock wakeLock;
     private WifiApManager wifiApManager;
+    
+    private Handler mainThreadHandler = null;
 
     /**
      * A constructor is required, and must call the super IntentService(String)
@@ -58,6 +61,8 @@ public class AlarmHotspotService extends IntentService {
      */
     public AlarmHotspotService() {
         super("AlarmHotspotService");
+        
+        mainThreadHandler = new Handler();
     }
 
     @Override
@@ -86,7 +91,6 @@ public class AlarmHotspotService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Bundle bundle = intent.getExtras();
         if (bundle.getBoolean(IS_FROM_WIDGET)) {
-
             boolean enabled = !wifiApManager.isWifiApEnabled();
             wifiApManager.setWifiApEnabled(
                     wifiApManager.getWifiApConfiguration(), enabled);
@@ -95,14 +99,9 @@ public class AlarmHotspotService extends IntentService {
                 RxTx startRxTx = getRxTx();
                 setAlarm(Calendar.getInstance().getTimeInMillis(), startRxTx);
                 
-                Toast.makeText(getApplicationContext(),
-                        "Hotspot is starting...",
-                        Toast.LENGTH_SHORT).show();
-                
+                toastMakeText("Hotspot is starting...");
             } else {
-                Toast.makeText(getApplicationContext(),
-                        "Hotspot has been turned off.",
-                        Toast.LENGTH_SHORT).show();
+                toastMakeText("Hotspot has been turned off.");
             }
         } else {
             
@@ -119,7 +118,7 @@ public class AlarmHotspotService extends IntentService {
                     CharSequence tickerText = "Data usage exceeded!";
                     CharSequence contentText = "Check what is consuming your data. The system might be automatically downloading newly updates.";
                     Intent notificationIntent = new Intent(this, MainActivity.class);
-                    PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+                    PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
                     
                     Notification notification = new Notification(icon, tickerText, when);
                     notification.setLatestEventInfo(getApplicationContext(), tickerText, contentText, contentIntent);
@@ -175,7 +174,7 @@ public class AlarmHotspotService extends IntentService {
         AlarmManager alarmManager =
                 (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-                Calendar.getInstance().getTimeInMillis(), INTERVAL,
+                Calendar.getInstance().getTimeInMillis() + INTERVAL, INTERVAL,
                 pendingIntent);
     }
     
@@ -204,5 +203,14 @@ public class AlarmHotspotService extends IntentService {
         return new RxTx(rx, tx);
     }
     
-    
+    private void toastMakeText(final String text) {
+        mainThreadHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(),
+                    text,
+                    Toast.LENGTH_LONG).show();
+            }
+        });
+    }
 }

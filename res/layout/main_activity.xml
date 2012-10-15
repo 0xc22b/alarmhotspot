@@ -3,24 +3,49 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-
-    <CheckBox
-        android:id="@+id/checkBox1"
+    
+    <RelativeLayout 
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/hotspot" />
+        android:layout_height="@dimen/normal_height">
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/normal_height"
+            android:layout_alignParentLeft="true"
+            android:gravity="left|center_vertical"
+	        android:padding="@dimen/widget_margin"
+	        android:textAppearance="?android:attr/textAppearanceMedium"
+	        android:text="@string/hotspot"/>
+        
+        <CheckBox
+	        android:id="@+id/checkBox1"
+	        android:layout_width="@dimen/normal_height"
+	        android:layout_height="@dimen/normal_height"
+	        android:layout_alignParentRight="true"
+	        android:background="@android:color/white"
+	        android:text="" />
+        
+    </RelativeLayout>
 
     <Button
         android:id="@+id/to_configure_btn"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/normal_height"
+        android:background="@color/button_bg"
+        android:gravity="left|center_vertical"
+        android:padding="@dimen/widget_margin"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/to_configure"
         android:onClick="goToConfigure" />
     
     <Button
         android:id="@+id/to_log_btn"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/normal_height"
+        android:background="@color/button_bg"
+        android:gravity="left|center_vertical"
+        android:padding="@dimen/widget_margin"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/to_log"
         android:onClick="goToLog" />
 </LinearLayout>
