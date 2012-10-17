@@ -2,26 +2,52 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="8dp" >
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/appwidget_configure_instructions" />
-
-    <EditText
-        android:id="@+id/data_limit_edit_text"
+        android:gravity="left"
+        android:layout_marginBottom="8dp"
+        android:textSize="21dp"
+        android:text="@string/data_limit" />
+    
+    <View 
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
-    />
+        android:layout_height="1dp"
+        android:background="@color/gray"/>
+
+    <RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:padding="8dp" >
+	    
+        <EditText
+            android:id="@+id/data_limit_edit_text"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="right|center_vertical"
+            android:inputType="numberDecimal"
+            android:maxLength="4"/>
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/data_limit_edit_text"
+            android:layout_alignBaseline="@id/data_limit_edit_text"
+            android:layout_marginLeft="8dp"
+            android:textSize="21dp"
+            android:text="@string/mb"/>
+    </RelativeLayout>
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@android:string/ok"
-        android:onClick="onSaveBtnClicked"
-    />
+        android:textSize="21dp"
+        android:text="@string/save"
+        android:onClick="onSaveBtnClicked" />
 
 </LinearLayout>

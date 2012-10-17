@@ -3,7 +3,6 @@ package com.wit.alarmhotspot;
 import java.util.Calendar;
 
 import android.app.AlarmManager;
-import android.app.AlertDialog;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -20,7 +19,7 @@ import com.wit.alarmhotspot.model.AlarmHotspotDb;
 import com.wit.alarmhotspot.model.TransferObj;
 
 public class AlarmHotspotService extends IntentService {
-
+    
     private class RxTx {
         long rx;
         long tx;
@@ -51,7 +50,6 @@ public class AlarmHotspotService extends IntentService {
     public static final String WAKE_LOCK_TAG = "AlarmHotspotServiceWakeLock";
 
     static WakeLock wakeLock;
-    private WifiApManager wifiApManager;
     
     private Handler mainThreadHandler = null;
 
@@ -68,7 +66,6 @@ public class AlarmHotspotService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
-        wifiApManager = new WifiApManager(this);
     }
     
     @Override
@@ -89,6 +86,8 @@ public class AlarmHotspotService extends IntentService {
      */
     @Override
     protected void onHandleIntent(Intent intent) {
+        WifiApManager wifiApManager = WifiApManager.get(
+                    getApplicationContext());
         Bundle bundle = intent.getExtras();
         if (bundle.getBoolean(IS_FROM_WIDGET)) {
             boolean enabled = !wifiApManager.isWifiApEnabled();
@@ -97,6 +96,7 @@ public class AlarmHotspotService extends IntentService {
 
             if (enabled) {
                 RxTx startRxTx = getRxTx();
+                //TODO cancelAlarm();
                 setAlarm(Calendar.getInstance().getTimeInMillis(), startRxTx);
                 
                 toastMakeText("Hotspot is starting...");
@@ -121,7 +121,7 @@ public class AlarmHotspotService extends IntentService {
                     PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
                     
                     Notification notification = new Notification(icon, tickerText, when);
-                    notification.setLatestEventInfo(getApplicationContext(), tickerText, contentText, contentIntent);
+                    notification.setLatestEventInfo(this, tickerText, contentText, contentIntent);
                     notification.defaults |= Notification.DEFAULT_SOUND;
                     
                     NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -163,30 +163,26 @@ public class AlarmHotspotService extends IntentService {
 
     private void setAlarm(long startDate, RxTx startRxTx) {
 
-        Intent intent = new Intent(getApplicationContext(),
-                AlarmHotspotBroadcastReceiver.class);
+        Intent intent = new Intent(this, AlarmHotspotBroadcastReceiver.class);
         intent.putExtras(AlarmHotspotService.generateBundle(false, startDate,
                 startRxTx.rx, startRxTx.tx));
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                getApplicationContext(), 0, intent,
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent,
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
         AlarmManager alarmManager =
-                (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+                (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
                 Calendar.getInstance().getTimeInMillis() + INTERVAL, INTERVAL,
                 pendingIntent);
     }
     
     private void cancelAlarm() {
-        Intent intent = new Intent(getApplicationContext(),
-                AlarmHotspotBroadcastReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                getApplicationContext(), 0, intent,
+        Intent intent = new Intent(this, AlarmHotspotBroadcastReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent,
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
-        AlarmManager alarmManager = (AlarmManager)
-                getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        AlarmManager alarmManager = 
+                (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
     }
     
@@ -195,10 +191,10 @@ public class AlarmHotspotService extends IntentService {
         long tx = TrafficStats.getTotalTxBytes();
         if (rx == TrafficStats.UNSUPPORTED
                 || tx == TrafficStats.UNSUPPORTED) {
-            AlertDialog.Builder alert = new AlertDialog.Builder(this);
-            alert.setTitle("Uh Oh!");
-            alert.setMessage("Your device does not support traffic stat monitoring.");
-            alert.show();
+            // Start an activity to show the alert.
+            Intent intent = new Intent(this, AlertActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
         }
         return new RxTx(rx, tx);
     }
@@ -207,9 +203,10 @@ public class AlarmHotspotService extends IntentService {
         mainThreadHandler.post(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(getApplicationContext(),
-                    text,
-                    Toast.LENGTH_LONG).show();
+                Toast.makeText(
+                        AlarmHotspotService.this,
+                        text,
+                        Toast.LENGTH_LONG).show();
             }
         });
     }

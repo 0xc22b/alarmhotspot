@@ -20,8 +20,8 @@ public class TransferListAdapter extends BaseAdapter {
 
     public TransferListAdapter(Context context, ArrayList<TransferObj> content) {
         init(context, new int[]{R.layout.transfer_list_item_1}, 
-                new int[]{R.id.start_text, R.id.end_text, R.id.transfer_text},
-                content);
+                new int[]{R.id.text1, R.id.text2, R.id.text3, R.id.text4,
+                R.id.text5, R.id.text6, R.id.text7}, content);
     }
     
     public TransferListAdapter(Context context, int[] itemLayouts, int[] itemIDs, ArrayList<TransferObj> content) {
@@ -69,6 +69,10 @@ public class TransferListAdapter extends BaseAdapter {
             holder.text1 = (TextView) convertView.findViewById(mIds[0]);
             holder.text2 = (TextView) convertView.findViewById(mIds[1]);
             holder.text3 = (TextView) convertView.findViewById(mIds[2]);
+            holder.text4 = (TextView) convertView.findViewById(mIds[3]);
+            holder.text5 = (TextView) convertView.findViewById(mIds[4]);
+            holder.text6 = (TextView) convertView.findViewById(mIds[5]);
+            holder.text7 = (TextView) convertView.findViewById(mIds[6]);
 
             convertView.setTag(holder);
         } else {
@@ -77,9 +81,13 @@ public class TransferListAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        holder.text1.setText(mContent.get(position).getStartDateString());
-        holder.text2.setText(mContent.get(position).getEndDateString());
-        holder.text3.setText(mContent.get(position).getTransferString());
+        holder.text1.setText(mContent.get(position).getStartDateString("dd"));
+        holder.text2.setText(mContent.get(position).getStartDateString("MMM yyyy"));
+        holder.text3.setText(mContent.get(position).getStartDateString("h:mmaa"));
+        holder.text4.setText(mContent.get(position).getEndDateString("dd"));
+        holder.text5.setText(mContent.get(position).getEndDateString("MMM yyyy"));
+        holder.text6.setText(mContent.get(position).getEndDateString("h:mmaa"));
+        holder.text7.setText(mContent.get(position).getTransferString());
 
         return convertView;
     }
@@ -88,6 +96,10 @@ public class TransferListAdapter extends BaseAdapter {
         TextView text1;
         TextView text2;
         TextView text3;
+        TextView text4;
+        TextView text5;
+        TextView text6;
+        TextView text7;
     }
 
 }

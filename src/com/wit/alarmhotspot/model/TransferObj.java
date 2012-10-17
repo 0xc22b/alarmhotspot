@@ -1,5 +1,6 @@
 package com.wit.alarmhotspot.model;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.content.ContentValues;
@@ -65,12 +66,14 @@ public class TransferObj implements Parcelable {
         return values;
     }
     
-    public String getStartDateString() {
-        return new Date(startDate).toString();
+    public String getStartDateString(String pattern) {
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        return formatter.format(new Date(startDate));
     }
     
-    public String getEndDateString() {
-        return new Date(endDate).toString();
+    public String getEndDateString(String pattern) {
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        return formatter.format(new Date(endDate));
     }
     
     public String getTransferString() {

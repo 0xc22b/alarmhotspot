@@ -106,4 +106,13 @@ public class WifiApManager {
 			return false;
 		}
 	}
+    
+    private static WifiApManager instance;
+    
+    public static WifiApManager get(Context context) {
+        if (instance == null) {
+            instance = new WifiApManager(context);
+        }
+        return instance;
+    }
 }

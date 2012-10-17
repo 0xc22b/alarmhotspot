@@ -36,8 +36,11 @@
         </activity>
         
         <activity
-            android:name=".LogActivity"
-            android:label="@string/title_activity_log" >
+            android:name=".LogActivity" >
+        </activity>
+        
+        <activity
+            android:name=".AlertActivity" >
         </activity>
 
         <service

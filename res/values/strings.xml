@@ -8,10 +8,14 @@
     
     <string name="appwidget_configure_instructions">This text will be shown before the date in our example widget.</string>
     
-    <string name="hotspot">Hotspot</string>
+    <string name="hotspot">Portable Wi-Fi hotspot</string>
+    <string name="data_limit">Data limit from on to off</string>
+    <string name="data_limit_desc">reached, fire the alarm.</string>
     <string name="to_log">Log</string>
-    <string name="to_configure">Settings</string>
     
     <string name="no_data">No data</string>
+    <string name="log_desc">To save battery, Log might take several minutes to get updated.</string>
+    <string name="mb">MB</string>
+    <string name="save">Save</string>
 
 </resources>

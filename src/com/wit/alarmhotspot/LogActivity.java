@@ -32,8 +32,8 @@ public class LogActivity extends ListActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.log_activity, menu);
-        return true;
+        //getMenuInflater().inflate(R.menu.log_activity, menu);
+        return false;
     }
 
     @Override

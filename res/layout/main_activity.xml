@@ -6,46 +6,79 @@
     
     <RelativeLayout 
         android:layout_width="match_parent"
-        android:layout_height="@dimen/normal_height">
-        
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/normal_height"
-            android:layout_alignParentLeft="true"
-            android:gravity="left|center_vertical"
-	        android:padding="@dimen/widget_margin"
-	        android:textAppearance="?android:attr/textAppearanceMedium"
-	        android:text="@string/hotspot"/>
+        android:layout_height="wrap_content"
+        android:background="@drawable/btn_bg_state_selector"
+        android:paddingTop="@dimen/padding"
+        android:paddingBottom="@dimen/padding"
+        android:paddingLeft="8dp">
         
         <CheckBox
-	        android:id="@+id/checkBox1"
-	        android:layout_width="@dimen/normal_height"
-	        android:layout_height="@dimen/normal_height"
+	        android:id="@+id/hotspotCheckBox"
+	        android:layout_width="48dp"
+	        android:layout_height="wrap_content"
 	        android:layout_alignParentRight="true"
 	        android:background="@android:color/white"
 	        android:text="" />
         
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignBaseline="@id/hotspotCheckBox"
+            android:gravity="left|center_vertical"
+	        android:textAppearance="?android:attr/textAppearanceMedium"
+	        android:text="@string/hotspot"/>
     </RelativeLayout>
-
-    <Button
-        android:id="@+id/to_configure_btn"
+    
+    <View
         android:layout_width="match_parent"
-        android:layout_height="@dimen/normal_height"
-        android:background="@color/button_bg"
-        android:gravity="left|center_vertical"
-        android:padding="@dimen/widget_margin"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/to_configure"
-        android:onClick="goToConfigure" />
+        android:layout_height="1dp"
+        android:background="@color/gray"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/btn_bg_state_selector"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:clickable="true"
+        android:onClick="goToConfigure">
+        
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="left|center_vertical"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/data_limit" />
+        
+        <TextView
+            android:id="@+id/data_limit_text_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="left|center_vertical"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="@string/data_limit_desc"/>
+    </LinearLayout>
+    
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/gray"/>
     
     <Button
-        android:id="@+id/to_log_btn"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/normal_height"
-        android:background="@color/button_bg"
+        android:layout_height="wrap_content"
+        android:background="@drawable/btn_bg_state_selector"
         android:gravity="left|center_vertical"
-        android:padding="@dimen/widget_margin"
+        android:paddingLeft="8dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/to_log"
         android:onClick="goToLog" />
+    
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/gray"/>
 </LinearLayout>
