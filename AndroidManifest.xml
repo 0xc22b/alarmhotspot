@@ -35,17 +35,14 @@
             </intent-filter>
         </activity>
         
-        <activity
-            android:name=".LogActivity" >
+        <activity android:name=".LogActivity" >
         </activity>
         
-        <activity
-            android:name=".AlertActivity" >
+        <activity android:name=".AlertActivity" >
         </activity>
 
-        <service
-            android:name=".AlarmHotspotService"
-            android:exported="false" />
+        <service android:name=".AlarmHotspotService" 
+                 android:exported="false" />
         
         <receiver android:name=".AlarmHotspotAppWidgetProvider" >
             <intent-filter>

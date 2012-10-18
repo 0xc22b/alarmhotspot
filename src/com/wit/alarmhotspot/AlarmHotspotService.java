@@ -112,20 +112,7 @@ public class AlarmHotspotService extends IntentService {
             if (wifiApManager.isWifiApEnabled()) {
                 // check if exceeded data limit
                 if (rxTx.didExceed(startRxTx, getDataLimitFromPrefs())) {
-                    // Notify the user.
-                    int icon = android.R.drawable.stat_notify_error;
-                    long when = System.currentTimeMillis();
-                    CharSequence tickerText = "Data usage exceeded!";
-                    CharSequence contentText = "Check what is consuming your data. The system might be automatically downloading newly updates.";
-                    Intent notificationIntent = new Intent(this, MainActivity.class);
-                    PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-                    
-                    Notification notification = new Notification(icon, tickerText, when);
-                    notification.setLatestEventInfo(this, tickerText, contentText, contentIntent);
-                    notification.defaults |= Notification.DEFAULT_SOUND;
-                    
-                    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                    notificationManager.notify(1, notification);
+                    notifyDataExceeded();
                 }
             } else {
                 // Keep log in DB.
@@ -192,10 +179,17 @@ public class AlarmHotspotService extends IntentService {
         if (rx == TrafficStats.UNSUPPORTED
                 || tx == TrafficStats.UNSUPPORTED) {
             // Start an activity to show the alert.
+            Bundle extras = new Bundle();
+            extras.putString(AlertActivity.TITLE, getResources().getString(R.string.no_traffic_stat));
+            extras.putString(AlertActivity.MESSAGE, getResources().getString(R.string.no_traffic_stat_desc));
+            
             Intent intent = new Intent(this, AlertActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            intent.putExtras(extras);
             startActivity(intent);
         }
+        
         return new RxTx(rx, tx);
     }
     
@@ -209,5 +203,32 @@ public class AlarmHotspotService extends IntentService {
                         Toast.LENGTH_LONG).show();
             }
         });
+    }
+    
+    @SuppressWarnings("deprecation")
+    private void notifyDataExceeded() {
+        // Notify the user that data exceeded.
+        String title = getResources().getString(R.string.data_limit_exceeded);
+        String message = getResources().getString(R.string.data_limit_exceeded_desc);
+        
+        Bundle extras = new Bundle();
+        extras.putString(AlertActivity.TITLE, title);
+        extras.putString(AlertActivity.MESSAGE, message);
+        
+        Intent intent = new Intent(this, AlertActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+        intent.putExtras(extras);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        
+        Notification notification = new Notification(
+                android.R.drawable.stat_notify_error, title,
+                System.currentTimeMillis());
+        notification.setLatestEventInfo(this, title, message, pendingIntent);
+        notification.defaults |= Notification.DEFAULT_SOUND;
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(1, notification);
     }
 }
