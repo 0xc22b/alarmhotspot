@@ -77,7 +77,7 @@ public class TransferObj implements Parcelable {
     }
     
     public String getTransferString() {
-        int transferInMB = (int) (transfer / 1000000);
-        return transferInMB + " MB";
+        double transferInMB = (double) (transfer / 1000000);
+        return String.format("%.1f", transferInMB) + " MB";
     }
 }

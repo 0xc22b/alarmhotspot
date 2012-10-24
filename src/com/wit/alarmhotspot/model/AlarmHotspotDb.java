@@ -111,7 +111,7 @@ public class AlarmHotspotDb {
         }
     }
 
-    public int editTransfer(TransferObj transferObj) {
+    /*public int editTransfer(TransferObj transferObj) {
         // Opens the database object in "write" mode.
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         String where = BaseColumns._ID + " = " + transferObj.id;
@@ -122,7 +122,7 @@ public class AlarmHotspotDb {
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         String where = BaseColumns._ID + " = " + id;
         return db.delete(TABLE_NAME, where, null);
-    }
+    }*/
     
     private void closeDb() {
         databaseHelper.close();

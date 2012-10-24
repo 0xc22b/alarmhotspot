@@ -20,7 +20,7 @@ import com.wit.alarmhotspot.model.TransferObj;
 
 public class AlarmHotspotService extends IntentService {
     
-    private class RxTx {
+    public static class RxTx {
         long rx;
         long tx;
         
@@ -56,7 +56,8 @@ public class AlarmHotspotService extends IntentService {
     public static final String MARK_RX = "markRx";
     public static final String MARK_TX = "markTx";
     
-    public static final long TEN_MINS = 600000l;
+    //public static final long TEN_MINS = 600000l;
+    public static final long TEN_MINS = 60000l;
     public static final long TWO_MINS = 120000l;
     public static final long SEVEN_MINS = 420000l;
     
@@ -143,13 +144,13 @@ public class AlarmHotspotService extends IntentService {
                     // if already exceeded, make it 7 mins
                     setAlarm(extras, now + SEVEN_MINS);
                 } else {
-                    long triggerAtMillis = calculateInterval(
+                    long interval = calculateInterval(
                             bundle.getLong(MARK_DATE),
                             new RxTx(bundle.getLong(MARK_RX), bundle.getLong(MARK_TX)),
                             now,
                             rxTx,
                             rxTx.getAmountToLimit(startRxTx, dataLimit));
-                    setAlarm(extras, now + triggerAtMillis);
+                    setAlarm(extras, now + interval);
                 }
             } else {
                 // Keep log in DB.
@@ -201,9 +202,10 @@ public class AlarmHotspotService extends IntentService {
 
         Intent intent = new Intent(this, AlarmHotspotBroadcastReceiver.class);
         intent.putExtras(extras);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent,
-                PendingIntent.FLAG_NO_CREATE);
-
+        
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
+                intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        
         AlarmManager alarmManager =
                 (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
