@@ -110,7 +110,7 @@ public class AlarmHotspotAppWidgetConfigure extends Activity {
         if (dataLimit != null) {
             return dataLimit;
         } else {
-            return "20";
+            return "30";
         }
     }
 

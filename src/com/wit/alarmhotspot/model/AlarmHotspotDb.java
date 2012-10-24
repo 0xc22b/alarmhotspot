@@ -21,8 +21,16 @@ public class AlarmHotspotDb {
     public static final String TABLE_NAME = "transfer";
 
     public static final String COLUMN_NAME_START_DATE = "_startDate";
+    public static final String COLUMN_NAME_START_RX = "_startRx";
+    public static final String COLUMN_NAME_START_TX = "_startTx";
     public static final String COLUMN_NAME_END_DATE = "_endDate";
-    public static final String COLUMN_NAME_TRANSFER = "_transfer";
+    public static final String COLUMN_NAME_END_RX = "_endRx";
+    public static final String COLUMN_NAME_END_TX = "_endTx";
+    
+    public static final String[] COLUMNS = new String[] { BaseColumns._ID,
+                COLUMN_NAME_START_DATE, COLUMN_NAME_START_RX,
+                COLUMN_NAME_START_TX, COLUMN_NAME_END_DATE,
+                COLUMN_NAME_END_RX, COLUMN_NAME_END_TX };
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -39,8 +47,11 @@ public class AlarmHotspotDb {
             db.execSQL("CREATE TABLE " + TABLE_NAME + " ("
                     + BaseColumns._ID + " INTEGER PRIMARY KEY,"
                     + COLUMN_NAME_START_DATE + " INTEGER,"
+                    + COLUMN_NAME_START_RX + " INTEGER,"
+                    + COLUMN_NAME_START_TX + " INTEGER,"
                     + COLUMN_NAME_END_DATE + " INTEGER,"
-                    + COLUMN_NAME_TRANSFER + " INTEGER"
+                    + COLUMN_NAME_END_RX + " INTEGER,"
+                    + COLUMN_NAME_END_TX + " INTEGER"
                     + ");");
         }
 
@@ -52,8 +63,7 @@ public class AlarmHotspotDb {
          * application should upgrade the database in place.
          */
         @Override
-        public void
-                onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
             // Logs that the database is being upgraded
             Log.w(TAG, "Upgrading database from version " + oldVersion + " to "
@@ -77,12 +87,8 @@ public class AlarmHotspotDb {
     public ArrayList<TransferObj> fetchTransferListFromDb() {
         ArrayList<TransferObj> transferList = new ArrayList<TransferObj>();
         SQLiteDatabase db = databaseHelper.getReadableDatabase();
-        String[] columns =
-                new String[] { BaseColumns._ID, COLUMN_NAME_START_DATE,
-                        COLUMN_NAME_END_DATE, COLUMN_NAME_TRANSFER };
-        Cursor cursor =
-                db.query(TABLE_NAME, columns, null, null,
-                        null, null, COLUMN_NAME_START_DATE + " desc");
+        Cursor cursor = db.query(TABLE_NAME, COLUMNS, null, null, null, null,
+                COLUMN_NAME_START_DATE + " desc");
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             TransferObj transferObj = new TransferObj(cursor);
@@ -91,6 +97,16 @@ public class AlarmHotspotDb {
         }
         cursor.close();
         return transferList;
+    }
+    
+    public TransferObj getLatestTransfer() {
+        SQLiteDatabase db = databaseHelper.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_NAME, COLUMNS, null, null, null, null,
+                COLUMN_NAME_START_DATE + " desc");
+        cursor.moveToFirst();
+        TransferObj transferObj = new TransferObj(cursor);
+        cursor.close();
+        return transferObj;
     }
 
     public long addTransfer(TransferObj transferObj) {
@@ -111,14 +127,14 @@ public class AlarmHotspotDb {
         }
     }
 
-    /*public int editTransfer(TransferObj transferObj) {
+    public int editTransfer(TransferObj transferObj) {
         // Opens the database object in "write" mode.
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         String where = BaseColumns._ID + " = " + transferObj.id;
         return db.update(TABLE_NAME, transferObj.getContentValues(), where, null);
     }
 
-    public int deleteTransfer(long id) {
+    /*public int deleteTransfer(long id) {
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         String where = BaseColumns._ID + " = " + id;
         return db.delete(TABLE_NAME, where, null);

@@ -28,36 +28,11 @@ public class AlarmHotspotService extends IntentService {
             this.rx = rx;
             this.tx = tx;
         }
-        
-        public boolean didExceed(RxTx startRxTx, long dataLimit) {
-            long halfDataLimit = dataLimit / 2;
-            long resultRx = startRxTx.rx + halfDataLimit - this.rx;
-            long resultTx = startRxTx.tx + halfDataLimit - this.tx;
-            return resultRx + resultTx > 0 ? false : true;
-        }
-        
-        public long getAmountLesserThan(RxTx rxTx) {
-            return (rxTx.rx - this.rx) + (rxTx.tx - this.tx);
-        }
-        
-        public long getAmountToLimit(RxTx startRxTx, long dataLimit) {
-            long halfDataLimit = dataLimit / 2;
-            long resultRx = startRxTx.rx + halfDataLimit - this.rx;
-            long resultTx = startRxTx.tx + halfDataLimit - this.tx;
-            return resultRx + resultTx;
-        }
     }
     
     public static final String IS_FROM_WIDGET = "isFromWidget";
-    public static final String START_DATE = "startDate";
-    public static final String START_RX = "startRx";
-    public static final String START_TX = "startTx";
-    public static final String MARK_DATE = "markDate";
-    public static final String MARK_RX = "markRx";
-    public static final String MARK_TX = "markTx";
     
-    //public static final long TEN_MINS = 600000l;
-    public static final long TEN_MINS = 60000l;
+    public static final long TEN_MINS = 600000l;
     public static final long TWO_MINS = 120000l;
     public static final long SEVEN_MINS = 420000l;
     
@@ -105,84 +80,100 @@ public class AlarmHotspotService extends IntentService {
         Bundle bundle = intent.getExtras();
         
         if (bundle.getBoolean(IS_FROM_WIDGET)) {
-            boolean enabled = !wifiApManager.isWifiApEnabled();
-            wifiApManager.setWifiApEnabled(
-                    wifiApManager.getWifiApConfiguration(), enabled);
-
-            if (enabled) {
-                long now = Calendar.getInstance().getTimeInMillis();
-                RxTx rxTx = getRxTx();
-                
-                Bundle extras = AlarmHotspotService.generateBundle(false,
-                        now, rxTx.rx, rxTx.tx,
-                        now, rxTx.rx, rxTx.tx);
-                // if just started, make it 10 mins
-                setAlarm(extras, now + TEN_MINS);
+            if (!wifiApManager.isWifiApEnabled()) {
                 
                 toastMakeText("Hotspot is starting...");
+                
+                wifiApManager.setWifiApEnabled(
+                    wifiApManager.getWifiApConfiguration(), true);
+                
+                // Add to DB
+                RxTx rxTx = getRxTx();
+                long now = Calendar.getInstance().getTimeInMillis();
+                TransferObj transferObj = new TransferObj(now, rxTx.rx, rxTx.tx,
+                        now, rxTx.rx, rxTx.tx);
+                AlarmHotspotDb.get(getApplicationContext()).addTransfer(transferObj);
+                
+                // if just started, make it 10 mins
+                Bundle extras = AlarmHotspotService.generateBundle(false);
+                setAlarm(extras, now + TEN_MINS);
             } else {
                 toastMakeText("Hotspot has been turned off.");
+                
+                // RxTx will be changed when turn off hotspot.
+                // Update the log before.
+                TransferObj transferObj = AlarmHotspotDb.get(
+                        getApplicationContext()).getLatestTransfer();
+                RxTx rxTx = getRxTx();
+                long now = Calendar.getInstance().getTimeInMillis();
+                assert(rxTx.rx >= transferObj.endRx
+                        && rxTx.tx >= transferObj.endTx);
+                transferObj.endDate = now;
+                transferObj.endRx = rxTx.rx;
+                transferObj.endTx = rxTx.tx;
+                AlarmHotspotDb.get(getApplicationContext()).editTransfer(transferObj);
+                
+                wifiApManager.setWifiApEnabled(
+                    wifiApManager.getWifiApConfiguration(), false);
             }
         } else {
-            long now = Calendar.getInstance().getTimeInMillis();
-            long startDate = bundle.getLong(START_DATE);
-            RxTx rxTx = getRxTx();
-            RxTx startRxTx = new RxTx(bundle.getLong(START_RX),
-                    bundle.getLong(START_TX));
-                
             if (wifiApManager.isWifiApEnabled()) {
-                
+
+                TransferObj transferObj = AlarmHotspotDb.get(
+                        getApplicationContext()).getLatestTransfer();
+                RxTx rxTx = getRxTx();
                 long dataLimit = getDataLimitFromPrefs();
-                Bundle extras = AlarmHotspotService.generateBundle(false,
-                        startDate, startRxTx.rx, startRxTx.tx,
-                        now, rxTx.rx, rxTx.tx);
+                
+                long now = Calendar.getInstance().getTimeInMillis();
+                Bundle extras = AlarmHotspotService.generateBundle(false);
                 
                 // check if exceeded data limit
-                if (rxTx.didExceed(startRxTx, dataLimit)) {
+                if (TransferObj.didExceed(transferObj.startRx, transferObj.startTx,
+                        rxTx.rx, rxTx.tx, dataLimit)) {
+                    
                     notifyDataExceeded();
                     
-                    // if already exceeded, make it 7 mins
+                    // if exceeded, make it 7 mins
                     setAlarm(extras, now + SEVEN_MINS);
                 } else {
                     long interval = calculateInterval(
-                            bundle.getLong(MARK_DATE),
-                            new RxTx(bundle.getLong(MARK_RX), bundle.getLong(MARK_TX)),
+                            transferObj.endDate,
+                            transferObj.endRx,
+                            transferObj.endTx,
                             now,
-                            rxTx,
-                            rxTx.getAmountToLimit(startRxTx, dataLimit));
+                            rxTx.rx,
+                            rxTx.tx,
+                            TransferObj.getAmountToLimit(transferObj.startRx,
+                                    transferObj.startTx, transferObj.endRx,
+                                    transferObj.endTx, dataLimit));
                     setAlarm(extras, now + interval);
                 }
-            } else {
-                // Keep log in DB.
-                TransferObj transferObj = new TransferObj(startDate, now, 
-                        startRxTx.getAmountLesserThan(rxTx));
-                AlarmHotspotDb.get(getApplicationContext()).addTransfer(transferObj);
+                
+                // Update to DB
+                assert(rxTx.rx >= transferObj.endRx
+                        && rxTx.tx >= transferObj.endTx);
+                transferObj.endDate = now;
+                transferObj.endRx = rxTx.rx;
+                transferObj.endTx = rxTx.tx;
+                AlarmHotspotDb.get(getApplicationContext()).editTransfer(transferObj);
             }
         }
     }
 
-    protected static Bundle generateBundle(boolean isFromWidget, long startDate,
-            long startRx, long startTx, long markDate, long markRx,
-            long markTx) {
+    protected static Bundle generateBundle(boolean isFromWidget) {
         Bundle bundle = new Bundle();
         bundle.putBoolean(IS_FROM_WIDGET, isFromWidget);
-        bundle.putLong(START_DATE, startDate);
-        bundle.putLong(START_RX, startRx);
-        bundle.putLong(START_TX, startTx);
-        bundle.putLong(MARK_DATE, markDate);
-        bundle.putLong(MARK_RX, markRx);
-        bundle.putLong(MARK_TX, markTx);
         return bundle;
     }
     
-    private long calculateInterval(long markDate, RxTx markRxTx,
-            long now, RxTx rxTx, long amountToLimit) {
+    private long calculateInterval(long markDate, long markRx, long markTx,
+            long now, long rx, long tx, long amountToLimit) {
         // Calculate the next interval from the current speed.
         // Maximum is 10 mins, minimum is 2 mins.
         long interval = TEN_MINS;
-        interval = (now - markDate) / markRxTx.getAmountLesserThan(rxTx)
-                * amountToLimit;
-        interval += 60000;
+        interval = (now - markDate) / TransferObj.getAmountTransferred(markRx,
+                markTx, rx , tx) * amountToLimit;
+        interval += 30000;
         interval = interval > TEN_MINS ? TEN_MINS :
             interval < TWO_MINS ? TWO_MINS : interval;
         return interval;

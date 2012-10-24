@@ -22,27 +22,40 @@ public class TransferObj implements Parcelable {
     
     public long id;
     public long startDate;
+    public long startRx;
+    public long startTx;
     public long endDate;
-    public long transfer;
+    public long endRx;
+    public long endTx;
     
-    public TransferObj(long startDate, long endDate, long transfer) {
+    public TransferObj(long startDate, long startRx, long startTx, long endDate,
+            long endRx, long endTx) {
         this.startDate = startDate;
+        this.startRx = startRx;
+        this.startTx = startTx;
         this.endDate = endDate;
-        this.transfer = transfer;
+        this.endRx = endRx;
+        this.endTx = endTx;
     }
     
     public TransferObj(Cursor cursor) {
         this.id = cursor.getLong(0);
         this.startDate = cursor.getLong(1);
-        this.endDate = cursor.getLong(2);
-        this.transfer = cursor.getLong(3);
+        this.startRx = cursor.getLong(2);
+        this.startTx = cursor.getLong(3);
+        this.endDate = cursor.getLong(4);
+        this.endRx = cursor.getLong(5);
+        this.endTx = cursor.getLong(6);
     }
     
     private TransferObj(Parcel in) {
         this.id = in.readLong();
         this.startDate = in.readLong();
+        this.startRx = in.readLong();
+        this.startTx = in.readLong();
         this.endDate = in.readLong();
-        this.transfer = in.readLong();
+        this.endRx = in.readLong();
+        this.endTx = in.readLong();
     }
     
     @Override
@@ -54,15 +67,21 @@ public class TransferObj implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(id);
         dest.writeLong(startDate);
+        dest.writeLong(startRx);
+        dest.writeLong(startTx);
         dest.writeLong(endDate);
-        dest.writeLong(transfer);
+        dest.writeLong(endRx);
+        dest.writeLong(endTx);
     }
     
     public ContentValues getContentValues() {
         ContentValues values = new ContentValues();
         values.put(AlarmHotspotDb.COLUMN_NAME_START_DATE, startDate);
+        values.put(AlarmHotspotDb.COLUMN_NAME_START_RX, startRx);
+        values.put(AlarmHotspotDb.COLUMN_NAME_START_TX, startTx);
         values.put(AlarmHotspotDb.COLUMN_NAME_END_DATE, endDate);
-        values.put(AlarmHotspotDb.COLUMN_NAME_TRANSFER, transfer);
+        values.put(AlarmHotspotDb.COLUMN_NAME_END_RX, endRx);
+        values.put(AlarmHotspotDb.COLUMN_NAME_END_TX, endTx);
         return values;
     }
     
@@ -77,7 +96,27 @@ public class TransferObj implements Parcelable {
     }
     
     public String getTransferString() {
-        double transferInMB = (double) (transfer / 1000000);
+        double transferInMB = (double) getAmountTransferred(startRx, startTx,
+                endRx, endTx) / 1000000;
         return String.format("%.1f", transferInMB) + " MB";
+    }
+    
+    public static boolean didExceed(long startRx, long startTx,
+            long endRx, long endTx, long dataLimit) {
+        return getAmountToLimit(startRx, startTx, endRx, endTx, dataLimit) > 0
+                ? false : true;
+    }
+    
+    public static long getAmountToLimit(long startRx, long startTx,
+            long endRx, long endTx, long dataLimit) {
+        long halfDataLimit = dataLimit / 2;
+        long resultRx = startRx + halfDataLimit - endRx;
+        long resultTx = startTx + halfDataLimit - endTx;
+        return resultRx + resultTx;
+    }
+    
+    public static long getAmountTransferred(long startRx, long startTx,
+            long endRx, long endTx) {
+        return (endRx - startRx) + (endTx - startTx);
     }
 }
