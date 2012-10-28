@@ -4,9 +4,6 @@
     <string name="menu_settings">Settings</string>
     
     <string name="title_activity_main">Alarm Hotspot</string>
-    <string name="title_activity_log">LogActivity</string>
-    
-    <string name="appwidget_configure_instructions">This text will be shown before the date in our example widget.</string>
     
     <string name="hotspot">Portable Wi-Fi hotspot</string>
     <string name="data_limit">Data limit from on to off</string>
@@ -14,13 +11,12 @@
     <string name="to_log">Log</string>
     
     <string name="no_data">No data</string>
-    <string name="log_desc">To save battery, Log might take several minutes to get updated.</string>
     <string name="mb">MB</string>
     <string name="save">Save</string>
     
-    <string name="data_limit_exceeded">Data limit exceeded!</string>
-    <string name="data_limit_exceeded_desc">Check what is consuming your data. The connected devices might be aggressive downloading something.</string>
+    <string name="data_limit_exceeded">Data limit reached!</string>
+    <string name="data_limit_exceeded_desc">Check what is consuming your data. The connected devices might be aggressively downloading something.</string>
 
     <string name="no_traffic_stat">No traffic stat supported!</string>
-    <string name="no_traffic_stat_desc">Your device does not support traffic stat monitoring. The widget is working without an alarm.</string>
+    <string name="no_traffic_stat_desc">Your device does not support traffic stat monitoring. The widget is working with no alarm.</string>
 </resources>

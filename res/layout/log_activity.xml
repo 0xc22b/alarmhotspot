@@ -20,13 +20,4 @@
         android:gravity="center"
         android:background="#FFF"
         android:text="@string/no_data"/>
-    
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:background="#FFF"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="@string/log_desc"/>
-
 </LinearLayout>

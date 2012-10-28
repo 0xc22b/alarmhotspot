@@ -117,6 +117,7 @@ public class TransferObj implements Parcelable {
     
     public static long getAmountTransferred(long startRx, long startTx,
             long endRx, long endTx) {
-        return (endRx - startRx) + (endTx - startTx);
+        long amount = (endRx - startRx) + (endTx - startTx);
+        return amount > 0 ? amount : 0;
     }
 }
