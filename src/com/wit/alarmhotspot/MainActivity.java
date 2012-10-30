@@ -75,7 +75,8 @@ public class MainActivity extends Activity implements
         switch (v.getId()) {
         case R.id.hotspotCheckBox:
             Intent intent = new Intent(this, AlarmHotspotService.class);
-            intent.putExtras(AlarmHotspotService.generateBundle(true));
+            intent.putExtras(AlarmHotspotService.generateServiceBundle(
+                    AlarmHotspotService.FROM_WIDGET));
             this.startService(intent);
             break;
         }

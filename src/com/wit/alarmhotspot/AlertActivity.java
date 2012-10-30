@@ -3,6 +3,7 @@ package com.wit.alarmhotspot;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 
 public class AlertActivity extends Activity implements
@@ -31,6 +32,12 @@ public class AlertActivity extends Activity implements
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
+        
+        Intent intent = new Intent(this, AlarmHotspotService.class);
+        intent.putExtras(AlarmHotspotService.generateServiceBundle(
+                AlarmHotspotService.FROM_ALERT));
+        this.startService(intent);
+        
         finish();
     }
 

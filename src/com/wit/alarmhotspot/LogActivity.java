@@ -11,19 +11,12 @@ import com.wit.alarmhotspot.model.TransferObj;
 
 public class LogActivity extends ListActivity {
 
-    public static final String TRANSFER_LIST = "transferList";
-    
-    private ArrayList<TransferObj> transferList;
     private ArrayList<TransferObj> displayList;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.log_activity);
-        
-        if (savedInstanceState != null) {
-            transferList = savedInstanceState.getParcelableArrayList(TRANSFER_LIST);
-        }
         
         // Create an array adapter for the list view        
         displayList = new ArrayList<TransferObj>();
@@ -40,21 +33,11 @@ public class LogActivity extends ListActivity {
     protected void onStart() {
         super.onStart();
         
-        if (transferList == null) {
-            transferList = AlarmHotspotDb.get(this).fetchTransferListFromDb();
-        }
-        
-        updateDisplayList();
-    }
-    
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        outState.putParcelableArrayList(TRANSFER_LIST, transferList);
-        
-        super.onSaveInstanceState(outState);
+        ArrayList<TransferObj> transferList = AlarmHotspotDb.get(this).fetchTransferListFromDb();
+        updateDisplayList(transferList);
     }
 
-    private void updateDisplayList() {
+    private void updateDisplayList(ArrayList<TransferObj> transferList) {
         assert(transferList != null);
         
         displayList.clear();

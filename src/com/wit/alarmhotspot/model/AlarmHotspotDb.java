@@ -8,7 +8,6 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
-import android.util.Log;
 
 public class AlarmHotspotDb {
 
@@ -16,7 +15,7 @@ public class AlarmHotspotDb {
     public static final String TAG = "AlarmHotspotDb";
 
     public static final String DATABASE_NAME = "alarm_hotspot.db";
-    public static final int DATABASE_VERSION = 2;
+    public static final int DATABASE_VERSION = 3;
 
     public static final String TABLE_NAME = "transfer";
 
@@ -26,11 +25,13 @@ public class AlarmHotspotDb {
     public static final String COLUMN_NAME_END_DATE = "_endDate";
     public static final String COLUMN_NAME_END_RX = "_endRx";
     public static final String COLUMN_NAME_END_TX = "_endTx";
+    public static final String COLUMN_NAME_DID_USER_KNOW = "_didUserKnow";
     
     public static final String[] COLUMNS = new String[] { BaseColumns._ID,
                 COLUMN_NAME_START_DATE, COLUMN_NAME_START_RX,
                 COLUMN_NAME_START_TX, COLUMN_NAME_END_DATE,
-                COLUMN_NAME_END_RX, COLUMN_NAME_END_TX };
+                COLUMN_NAME_END_RX, COLUMN_NAME_END_TX,
+                COLUMN_NAME_DID_USER_KNOW };
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -51,7 +52,8 @@ public class AlarmHotspotDb {
                     + COLUMN_NAME_START_TX + " INTEGER,"
                     + COLUMN_NAME_END_DATE + " INTEGER,"
                     + COLUMN_NAME_END_RX + " INTEGER,"
-                    + COLUMN_NAME_END_TX + " INTEGER"
+                    + COLUMN_NAME_END_TX + " INTEGER,"
+                    + COLUMN_NAME_DID_USER_KNOW + " INTEGER"
                     + ");");
         }
 
@@ -65,10 +67,8 @@ public class AlarmHotspotDb {
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-            // Logs that the database is being upgraded
-            Log.w(TAG, "Upgrading database from version " + oldVersion + " to "
-                    + newVersion + ", which will destroy all old data");
-
+            // TODO: copy existing data, drop table, recreate table, reinsert data. 
+            
             // Kills the table and existing data
             db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
 

@@ -27,15 +27,17 @@ public class TransferObj implements Parcelable {
     public long endDate;
     public long endRx;
     public long endTx;
+    public boolean didUserKnow;
     
     public TransferObj(long startDate, long startRx, long startTx, long endDate,
-            long endRx, long endTx) {
+            long endRx, long endTx, boolean didUserKnow) {
         this.startDate = startDate;
         this.startRx = startRx;
         this.startTx = startTx;
         this.endDate = endDate;
         this.endRx = endRx;
         this.endTx = endTx;
+        this.didUserKnow = didUserKnow;
     }
     
     public TransferObj(Cursor cursor) {
@@ -46,6 +48,7 @@ public class TransferObj implements Parcelable {
         this.endDate = cursor.getLong(4);
         this.endRx = cursor.getLong(5);
         this.endTx = cursor.getLong(6);
+        this.didUserKnow = cursor.getInt(7) > 0;
     }
     
     private TransferObj(Parcel in) {
@@ -56,6 +59,7 @@ public class TransferObj implements Parcelable {
         this.endDate = in.readLong();
         this.endRx = in.readLong();
         this.endTx = in.readLong();
+        this.didUserKnow = in.readInt() > 0;
     }
     
     @Override
@@ -72,6 +76,7 @@ public class TransferObj implements Parcelable {
         dest.writeLong(endDate);
         dest.writeLong(endRx);
         dest.writeLong(endTx);
+        dest.writeInt(didUserKnow ? 1 : 0);
     }
     
     public ContentValues getContentValues() {
@@ -82,6 +87,7 @@ public class TransferObj implements Parcelable {
         values.put(AlarmHotspotDb.COLUMN_NAME_END_DATE, endDate);
         values.put(AlarmHotspotDb.COLUMN_NAME_END_RX, endRx);
         values.put(AlarmHotspotDb.COLUMN_NAME_END_TX, endTx);
+        values.put(AlarmHotspotDb.COLUMN_NAME_DID_USER_KNOW, didUserKnow ? 1 : 0);
         return values;
     }
     

@@ -30,11 +30,14 @@ public class AlarmHotspotService extends IntentService {
         }
     }
     
-    public static final String IS_FROM_WIDGET = "isFromWidget";
+    public static final String FROM = "from";
+    
+    public static final int FROM_WIDGET = 0;
+    public static final int FROM_ALERT = 1;
+    public static final int FROM_ALARM = 2;
     
     public static final long TEN_MINS = 600000l;
     public static final long TWO_MINS = 120000l;
-    public static final long SEVEN_MINS = 420000l;
     
     public static final String WAKE_LOCK_TAG = "AlarmHotspotServiceWakeLock";
 
@@ -78,8 +81,9 @@ public class AlarmHotspotService extends IntentService {
         
         WifiApManager wifiApManager = WifiApManager.get(getApplicationContext());
         Bundle bundle = intent.getExtras();
+        int from = bundle.getInt(FROM);
         
-        if (bundle.getBoolean(IS_FROM_WIDGET)) {
+        if (from == FROM_WIDGET) {
             if (!wifiApManager.isWifiApEnabled()) {
                 
                 toastMakeText("Hotspot is starting...");
@@ -88,14 +92,14 @@ public class AlarmHotspotService extends IntentService {
                     wifiApManager.getWifiApConfiguration(), true);
                 
                 // Add to DB
-                RxTx rxTx = getRxTx();
+                RxTx rxTx = getRxTx(true);
                 long now = Calendar.getInstance().getTimeInMillis();
                 TransferObj transferObj = new TransferObj(now, rxTx.rx, rxTx.tx,
-                        now, rxTx.rx, rxTx.tx);
+                        now, rxTx.rx, rxTx.tx, false);
                 AlarmHotspotDb.get(getApplicationContext()).addTransfer(transferObj);
                 
                 // if just started, make it 10 mins
-                Bundle extras = AlarmHotspotService.generateBundle(false);
+                Bundle extras = AlarmHotspotService.generateServiceBundle(FROM_ALARM);
                 setAlarm(extras, now + TEN_MINS);
             } else {
                 toastMakeText("Hotspot has been turned off.");
@@ -104,7 +108,7 @@ public class AlarmHotspotService extends IntentService {
                 // Update the log before.
                 TransferObj transferObj = AlarmHotspotDb.get(
                         getApplicationContext()).getLatestTransfer();
-                RxTx rxTx = getRxTx();
+                RxTx rxTx = getRxTx(false);
                 long now = Calendar.getInstance().getTimeInMillis();
                 assert(rxTx.rx >= transferObj.endRx
                         && rxTx.tx >= transferObj.endTx);
@@ -116,25 +120,27 @@ public class AlarmHotspotService extends IntentService {
                 wifiApManager.setWifiApEnabled(
                     wifiApManager.getWifiApConfiguration(), false);
             }
-        } else {
+        } else if(from == FROM_ALARM) {
             if (wifiApManager.isWifiApEnabled()) {
 
                 TransferObj transferObj = AlarmHotspotDb.get(
                         getApplicationContext()).getLatestTransfer();
-                RxTx rxTx = getRxTx();
+                RxTx rxTx = getRxTx(false);
                 long dataLimit = getDataLimitFromPrefs();
                 
                 long now = Calendar.getInstance().getTimeInMillis();
-                Bundle extras = AlarmHotspotService.generateBundle(false);
+                Bundle extras = AlarmHotspotService.generateServiceBundle(FROM_ALARM);
                 
                 // check if exceeded data limit
                 if (TransferObj.didExceed(transferObj.startRx, transferObj.startTx,
                         rxTx.rx, rxTx.tx, dataLimit)) {
                     
-                    notifyDataExceeded();
+                    if (!transferObj.didUserKnow) {
+                        notifyDataExceeded();
+                    }
                     
-                    // if exceeded, make it 7 mins
-                    setAlarm(extras, now + SEVEN_MINS);
+                    // if exceeded, make it 10 mins
+                    setAlarm(extras, now + TEN_MINS);
                 } else {
                     long interval = calculateInterval(
                             transferObj.endDate,
@@ -157,12 +163,27 @@ public class AlarmHotspotService extends IntentService {
                 transferObj.endTx = rxTx.tx;
                 AlarmHotspotDb.get(getApplicationContext()).editTransfer(transferObj);
             }
+        } else if (from == FROM_ALERT) {
+            // User already knew, stop notifying!
+            TransferObj transferObj = AlarmHotspotDb.get(
+                    getApplicationContext()).getLatestTransfer();
+            transferObj.didUserKnow = true;
+            AlarmHotspotDb.get(getApplicationContext()).editTransfer(transferObj);
+        } else {
+            throw new AssertionError(from);
         }
     }
 
-    protected static Bundle generateBundle(boolean isFromWidget) {
+    protected static Bundle generateServiceBundle(int from) {
         Bundle bundle = new Bundle();
-        bundle.putBoolean(IS_FROM_WIDGET, isFromWidget);
+        bundle.putInt(FROM, from);
+        return bundle;
+    }
+    
+    protected static Bundle generateAlertBundle(String title, String message) {
+        Bundle bundle = new Bundle();
+        bundle.putString(AlertActivity.TITLE, title);
+        bundle.putString(AlertActivity.MESSAGE, message);
         return bundle;
     }
     
@@ -202,21 +223,24 @@ public class AlarmHotspotService extends IntentService {
         alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
     }
     
-    private RxTx getRxTx() {
+    private RxTx getRxTx(boolean isStarting) {
         long rx = TrafficStats.getTotalRxBytes();
         long tx = TrafficStats.getTotalTxBytes();
         if (rx == TrafficStats.UNSUPPORTED
                 || tx == TrafficStats.UNSUPPORTED) {
-            // Start an activity to show the alert.
-            Bundle extras = new Bundle();
-            extras.putString(AlertActivity.TITLE, getResources().getString(R.string.no_traffic_stat));
-            extras.putString(AlertActivity.MESSAGE, getResources().getString(R.string.no_traffic_stat_desc));
-            
-            Intent intent = new Intent(this, AlertActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-            intent.putExtras(extras);
-            startActivity(intent);
+            // TODO: Alert just once?
+            if (isStarting) {
+                // Start an activity to show the alert.
+                Bundle extras = generateAlertBundle(
+                        getResources().getString(R.string.no_traffic_stat),
+                        getResources().getString(R.string.no_traffic_stat));
+
+                Intent intent = new Intent(this, AlertActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                intent.putExtras(extras);
+                startActivity(intent);
+            }
         }
         
         return new RxTx(rx, tx);
@@ -240,15 +264,14 @@ public class AlarmHotspotService extends IntentService {
         String title = getResources().getString(R.string.data_limit_exceeded);
         String message = getResources().getString(R.string.data_limit_exceeded_desc);
         
-        Bundle extras = new Bundle();
-        extras.putString(AlertActivity.TITLE, title);
-        extras.putString(AlertActivity.MESSAGE, message);
+        Bundle extras = generateAlertBundle(title, message);
         
         Intent intent = new Intent(this, AlertActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
         intent.putExtras(extras);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
+                PendingIntent.FLAG_CANCEL_CURRENT);
         
         Notification notification = new Notification(
                 android.R.drawable.stat_notify_error, title,
@@ -257,7 +280,8 @@ public class AlarmHotspotService extends IntentService {
         notification.defaults |= Notification.DEFAULT_SOUND;
         notification.flags |= Notification.FLAG_AUTO_CANCEL;
         
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(
+                Context.NOTIFICATION_SERVICE);
         notificationManager.notify(1, notification);
     }
 }

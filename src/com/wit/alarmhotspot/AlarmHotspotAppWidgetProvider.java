@@ -28,7 +28,8 @@ public class AlarmHotspotAppWidgetProvider extends AppWidgetProvider {
             int appWidgetId = appWidgetIds[i];
             
             Intent intent = new Intent(context, AlarmHotspotService.class);
-            intent.putExtras(AlarmHotspotService.generateBundle(true));
+            intent.putExtras(AlarmHotspotService.generateServiceBundle(
+                    AlarmHotspotService.FROM_WIDGET));
             PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent,
                     PendingIntent.FLAG_UPDATE_CURRENT);
             
