@@ -26,6 +26,7 @@ public class AlertActivity extends Activity implements
         alert.setTitle(extras.getString(TITLE));
         alert.setMessage(extras.getString(MESSAGE));
         alert.setPositiveButton(android.R.string.ok, this);
+        alert.setNeutralButton(R.string.to_log, this);
         alert.setOnCancelListener(this);
         alert.show();
     }
@@ -38,6 +39,12 @@ public class AlertActivity extends Activity implements
                 AlarmHotspotService.FROM_ALERT));
         this.startService(intent);
         
+        if (which == DialogInterface.BUTTON_NEUTRAL) {
+            Intent toLogIntent = new Intent(this, LogActivity.class);
+            toLogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(toLogIntent);
+        }
+
         finish();
     }
 
