@@ -12,10 +12,22 @@ public class WifiApBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent wifiApIntent) {
 
         boolean enabled = false;
-        int state = wifiApIntent.getIntExtra(WifiApManager.EXTRA_WIFI_AP_STATE,
+        int tmp = wifiApIntent.getIntExtra(WifiApManager.EXTRA_WIFI_AP_STATE,
                 WifiApManager.WIFI_AP_STATE.WIFI_AP_STATE_FAILED.ordinal());
-        if (state == WifiApManager.WIFI_AP_STATE.WIFI_AP_STATE_ENABLED.ordinal()
-                || state == WifiApManager.WIFI_AP_STATE.WIFI_AP_STATE_ENABLING.ordinal()) {
+        
+        // Fix for Android 4
+        if (tmp >= 10) {
+            tmp = tmp - 10;
+        }
+        
+        WifiApManager.WIFI_AP_STATE state = WifiApManager.WIFI_AP_STATE.WIFI_AP_STATE_FAILED;
+        try {
+            state = WifiApManager.WIFI_AP_STATE.class.getEnumConstants()[tmp];
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
+        
+        if (state == WifiApManager.WIFI_AP_STATE.WIFI_AP_STATE_ENABLED
+                || state == WifiApManager.WIFI_AP_STATE.WIFI_AP_STATE_ENABLING) {
             enabled = true;
         }
 
