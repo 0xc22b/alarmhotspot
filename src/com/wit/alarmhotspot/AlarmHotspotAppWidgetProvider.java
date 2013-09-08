@@ -37,9 +37,9 @@ public class AlarmHotspotAppWidgetProvider extends AppWidgetProvider {
             views.setOnClickPendingIntent(R.id.widget_button, pendingIntent);
             
             if (enabled) {
-                views.setImageViewResource(R.id.widget_button, R.drawable.ic_launcher);
+                views.setImageViewResource(R.id.widget_button, R.drawable.ic_widget);
             } else {
-                views.setImageViewResource(R.id.widget_button, R.drawable.ic_launcher_grey);
+                views.setImageViewResource(R.id.widget_button, R.drawable.ic_widget_grey);
             }
             
             appWidgetManager.updateAppWidget(appWidgetId, views);

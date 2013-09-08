@@ -5,6 +5,6 @@
   android:layout_width="wrap_content"
   android:layout_height="wrap_content"
   android:padding="@dimen/widget_margin"
-  android:src="@drawable/ic_launcher_grey"
+  android:src="@drawable/ic_widget_grey"
   android:background="@android:color/transparent"
   android:contentDescription="@android:string/ok" />
